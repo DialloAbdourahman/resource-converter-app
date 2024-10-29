@@ -16,7 +16,9 @@ export const videoConvertedHandler = async (
   try {
     console.log("Video converted handler called");
 
-    const resource = await Resource.findById(data.id);
+    const resource = await Resource.findById(data.id).populate("user");
+
+    console.log("Resource in the video converted handler", resource);
 
     if (!resource) {
       throw new Error("Resource not found");
@@ -29,7 +31,7 @@ export const videoConvertedHandler = async (
     // Send a notification using a notification publisher
     await new NotificationVideoConvertedPublisher(
       rabbitmqWrapper.client
-    ).publish({ resourceId: resource.id });
+    ).publish({ resourceId: resource.id, email: resource.user.email });
 
     // Delete the video from s3
     const awsHelper = new AwsS3Helper();
