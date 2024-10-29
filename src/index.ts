@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { app } from "./app";
 import { rabbitmqWrapper } from "./rabbitmq-wrapper";
+import { ResourceServiceListener } from "./events/listeners/listener";
 require("dotenv").config();
 
 const PORT = 3000;
@@ -20,6 +21,26 @@ const start = async () => {
 
   if (!process.env.RABBITMQ_URL) {
     console.log("RABBITMQ_URL must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_BUCKET_NAME) {
+    console.log("AWS_BUCKET_NAME must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_BUCKET_REGION) {
+    console.log("AWS_BUCKET_REGION must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_ACCESS_KEY) {
+    console.log("AWS_ACCESS_KEY must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_SECRET_KEY) {
+    console.log("AWS_SECRET_KEY must be defined.");
     process.exit();
   }
 
@@ -51,6 +72,9 @@ const start = async () => {
       console.log("SIGINT received. Closing RabbitMQ connection...");
       await rabbitmqWrapper.client.close();
     });
+
+    // Running listener
+    new ResourceServiceListener(rabbitmqWrapper.client).listen();
   } catch (error) {
     console.log("Error connecting to Rabbitmq.");
     console.log(error);

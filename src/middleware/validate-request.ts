@@ -6,6 +6,8 @@ import { body, ValidationChain } from "express-validator";
 type ValidatorMiddleware = ValidationChain | RequestHandler;
 
 export const validateUpload: ValidatorMiddleware[] = [
-  body("name").exists().withMessage("Name must be valid"),
+  body("name")
+    .isLength({ min: 1, max: 20 })
+    .withMessage("Name must be at leat 1 characters and at most 20 characters"),
   validateRequest,
 ];

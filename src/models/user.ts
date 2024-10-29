@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { version } from "mongoose";
 
 // An interface that describes the properties required to create a new user
 interface UserAttrs {
@@ -21,6 +21,7 @@ export interface UserDoc extends mongoose.Document {
 // An interface that describes the properties that a User Model has
 interface UserModel extends mongoose.Model<UserDoc> {
   build(attrs: UserAttrs): UserDoc;
+  findByEvent(event: { id: string; version: number }): Promise<UserDoc | null>;
 }
 
 const userSchema = new mongoose.Schema(
@@ -31,7 +32,7 @@ const userSchema = new mongoose.Schema(
     },
     fullname: {
       type: String,
-      required: true,
+      required: false,
     },
     version: {
       type: Number,
@@ -50,7 +51,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.set("versionKey", "version");
+// userSchema.set("versionKey", "version");
 
 userSchema.statics.build = (attrs: UserAttrs) => {
   return new User({
@@ -59,6 +60,17 @@ userSchema.statics.build = (attrs: UserAttrs) => {
     fullname: attrs.fullname,
     version: attrs.version,
   });
+};
+
+userSchema.statics.findByEvent = async (event: {
+  id: string;
+  version: number;
+}) => {
+  const user = await User.findOne({
+    _id: event.id,
+    version: event.version - 1,
+  });
+  return user;
 };
 
 const User = mongoose.model<UserDoc, UserModel>("User", userSchema);

@@ -2,6 +2,26 @@ import mongoose, { mongo } from "mongoose";
 
 jest.mock("../rabbitmq-wrapper.ts");
 
+jest.mock("@daconverter/common-libs", () => {
+  const actualLibrary = jest.requireActual("@daconverter/common-libs");
+  return {
+    ...actualLibrary,
+    AwsS3Helper: jest.fn().mockImplementation(() => {
+      return {
+        uploadVideo: jest.fn().mockImplementation((file, bucket, options) => {
+          return Promise.resolve(true);
+        }),
+        getVideoUrl: jest.fn().mockImplementation((file) => {
+          return Promise.resolve("link");
+        }),
+        deleteVideoFromS3: jest.fn().mockImplementation((file) => {
+          return Promise.resolve("link");
+        }),
+      };
+    }),
+  };
+});
+
 // Runs before all our tests starts
 beforeAll(async () => {
   process.env.ACCESS_TOKEN_JWT_KEY = "1234";

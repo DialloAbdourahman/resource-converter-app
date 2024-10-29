@@ -6,7 +6,7 @@ import { VideoStates } from "@daconverter/common-libs";
 interface ResourceAttrs {
   name: string;
   video: string;
-  user: UserDoc;
+  user: UserDoc | string;
 }
 
 // An interface that describes the properties that a Resource documents has
@@ -37,15 +37,18 @@ const resourceSchema = new mongoose.Schema(
     },
     audio: {
       type: String,
-      required: true,
+      required: false,
+      default: "",
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
     status: {
-      type: VideoStates,
+      type: String,
       required: true,
+      enum: Object.values(VideoStates),
+      default: VideoStates.UPLOADED,
     },
   },
   {
@@ -61,13 +64,7 @@ const resourceSchema = new mongoose.Schema(
 );
 
 resourceSchema.statics.build = (attrs: ResourceAttrs) => {
-  return new Resource({
-    name: attrs.name,
-    video: attrs.video,
-    audio: "",
-    user: attrs.user,
-    status: VideoStates.UPLOADED,
-  });
+  return new Resource(attrs);
 };
 
 const Resource = mongoose.model<ResourceDoc, ResourceModel>(
