@@ -7,7 +7,7 @@ require("dotenv").config();
 const PORT = 3000;
 
 const start = async () => {
-  console.log("Starting the Resource service......");
+  console.log("Starting the Resource service...");
 
   if (!process.env.ACCESS_TOKEN_JWT_KEY) {
     console.log("ACCESS_TOKEN_JWT_KEY must be defined.");
