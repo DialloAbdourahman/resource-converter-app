@@ -1,22 +1,28 @@
 import {
-  NotificationVideoConvertedEvent,
   NotificationVideoNotConvertedEvent,
-  VideoConvertedEvent,
   VideoNotConvertedEvent,
   VideoStates,
 } from "@daconverter/common-libs";
 import { ConsumeMessage } from "amqplib";
 import mongoose from "mongoose";
-import { videoConvertedHandler } from "../VideoConvertedHandler";
 import { Resource } from "../../../../models/resource";
 import { rabbitmqWrapper } from "../../../../rabbitmq-wrapper";
 import { NotificationVideoConvertedPublisher } from "../../../publishers/NotificationVideoConverted";
 import { videoNotConvertedHandler } from "../VideoNotConvertedHandler";
+import { User } from "../../../../models/user";
 
 it("should handle a video not converted event", async () => {
+  const user = User.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    email: "test@test.com",
+    fullname: "test",
+    version: 1,
+  });
+  await user.save();
+
   const resource = Resource.build({
     name: "asdf",
-    user: new mongoose.Types.ObjectId().toHexString(),
+    user: user.id,
     video: "asdf",
   });
   await resource.save();
@@ -41,9 +47,17 @@ it("should handle a video not converted event", async () => {
 });
 
 it("should publish a video not converted event", async () => {
+  const user = User.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    email: "test@test.com",
+    fullname: "test",
+    version: 1,
+  });
+  await user.save();
+
   const resource = Resource.build({
     name: "asdf",
-    user: new mongoose.Types.ObjectId().toHexString(),
+    user: user.id,
     video: "asdf",
   });
   await resource.save();
@@ -72,6 +86,7 @@ it("should publish a video not converted event", async () => {
   );
   const mockEventData: NotificationVideoNotConvertedEvent["data"] = {
     resourceId: resource.id,
+    email: user.id,
   };
   await notificationVideoNotConvertedPublisher.publish(mockEventData);
 

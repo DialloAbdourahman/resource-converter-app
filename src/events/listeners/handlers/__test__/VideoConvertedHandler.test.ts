@@ -9,11 +9,20 @@ import { videoConvertedHandler } from "../VideoConvertedHandler";
 import { Resource } from "../../../../models/resource";
 import { rabbitmqWrapper } from "../../../../rabbitmq-wrapper";
 import { NotificationVideoConvertedPublisher } from "../../../publishers/NotificationVideoConverted";
+import { User } from "../../../../models/user";
 
 it("should handle a video converted event", async () => {
+  const user = User.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    email: "test@test.com",
+    fullname: "test",
+    version: 1,
+  });
+  await user.save();
+
   const resource = Resource.build({
     name: "asdf",
-    user: new mongoose.Types.ObjectId().toHexString(),
+    user: user.id,
     video: "asdf",
   });
   await resource.save();
@@ -39,9 +48,17 @@ it("should handle a video converted event", async () => {
 });
 
 it("should publish a video converted event", async () => {
+  const user = User.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    email: "test@test.com",
+    fullname: "test",
+    version: 1,
+  });
+  await user.save();
+
   const resource = Resource.build({
     name: "asdf",
-    user: new mongoose.Types.ObjectId().toHexString(),
+    user: user.id,
     video: "asdf",
   });
   await resource.save();
@@ -68,6 +85,7 @@ it("should publish a video converted event", async () => {
   const publishSpy = jest.spyOn(notificationVideoConvertedPublisher, "publish");
   const mockEventData: NotificationVideoConvertedEvent["data"] = {
     resourceId: resource.id,
+    email: user.email,
   };
   await notificationVideoConvertedPublisher.publish(mockEventData);
 

@@ -12,7 +12,7 @@ export const videoNotConvertedHandler = async (
   try {
     console.log("Video not converted handler called");
 
-    const resource = await Resource.findById(data.id);
+    const resource = await Resource.findById(data.id).populate("user");
 
     if (!resource) {
       throw new Error("Resource not found");
@@ -24,7 +24,7 @@ export const videoNotConvertedHandler = async (
     // Send a notification using a notification publisher
     await new NotificationVideoNotConvertedPublisher(
       rabbitmqWrapper.client
-    ).publish({ resourceId: resource.id });
+    ).publish({ resourceId: resource.id, email: resource.user.email });
 
     channel.ack(message);
   } catch (error) {
