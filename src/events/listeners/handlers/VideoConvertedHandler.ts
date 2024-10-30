@@ -29,7 +29,11 @@ export const videoConvertedHandler = async (
     // Send a notification using a notification publisher
     await new NotificationVideoConvertedPublisher(
       rabbitmqWrapper.client
-    ).publish({ resourceId: resource.id, email: resource.user.email });
+    ).publish({
+      resourceId: resource.id,
+      email: resource.user.email,
+      fullname: resource.user.fullname,
+    });
 
     // Delete the video from s3
     const awsHelper = new AwsS3Helper();

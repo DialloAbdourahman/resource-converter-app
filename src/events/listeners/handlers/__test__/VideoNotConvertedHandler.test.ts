@@ -87,6 +87,7 @@ it("should publish a video not converted event", async () => {
   const mockEventData: NotificationVideoNotConvertedEvent["data"] = {
     resourceId: resource.id,
     email: user.id,
+    fullname: user.fullname,
   };
   await notificationVideoNotConvertedPublisher.publish(mockEventData);
 
