@@ -24,7 +24,11 @@ export const videoNotConvertedHandler = async (
     // Send a notification using a notification publisher
     await new NotificationVideoNotConvertedPublisher(
       rabbitmqWrapper.client
-    ).publish({ resourceId: resource.id, email: resource.user.email });
+    ).publish({
+      resourceId: resource.id,
+      email: resource.user.email,
+      fullname: resource.user.fullname,
+    });
 
     channel.ack(message);
   } catch (error) {
