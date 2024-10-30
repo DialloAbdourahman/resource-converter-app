@@ -18,8 +18,6 @@ export const videoConvertedHandler = async (
 
     const resource = await Resource.findById(data.id).populate("user");
 
-    console.log("Resource in the video converted handler", resource);
-
     if (!resource) {
       throw new Error("Resource not found");
     }
