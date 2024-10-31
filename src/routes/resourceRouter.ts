@@ -51,6 +51,7 @@ router.post(
       name,
       video: key,
       user: req.currentUser?.id as string,
+      size: req.file.size,
     });
     await resource.save();
 
@@ -69,7 +70,7 @@ router.get("/:id", async (req: Request, res: Response) => {
   const resource = await Resource.findOne({
     _id: id,
     user: req.currentUser?.id,
-  });
+  }).populate("user");
 
   if (!resource) {
     throw new NotFoundError("Resource not found");
@@ -94,6 +95,44 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 
   OrchestrationResult.item(res, data);
+});
+
+router.post("/retry/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const resource = await Resource.findOne({
+    _id: id,
+    user: req.currentUser?.id,
+  }).populate("user");
+
+  if (!resource) {
+    throw new NotFoundError("Resource not found");
+  }
+
+  if (resource.status !== VideoStates.FAILED) {
+    if (resource.status === VideoStates.COMPLETE) {
+      throw new BadRequestError(
+        "Video has been converted already",
+        CODE.VIDEO_CONVERTED_ALREADY
+      );
+    }
+    if (resource.status === VideoStates.UPLOADED) {
+      throw new BadRequestError(
+        "Keep waiting, video is still being converted",
+        CODE.VIDEO_IS_STILL_BEING_CONVERTED
+      );
+    }
+  }
+
+  await new VideoUploadedPublisher(rabbitmqWrapper.client).publish({
+    id: resource.id,
+    video: resource.video,
+  });
+
+  resource.status = VideoStates.UPLOADED;
+  await resource.save();
+
+  OrchestrationResult.success(res);
 });
 
 router.get("/", async (req: Request, res: Response) => {
