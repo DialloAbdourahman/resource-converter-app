@@ -6,6 +6,7 @@ import { VideoStates } from "@daconverter/common-libs";
 interface ResourceAttrs {
   name: string;
   video: string;
+  size: number;
   user: UserDoc | string;
 }
 
@@ -14,6 +15,7 @@ export interface ResourceDoc extends mongoose.Document {
   name: string;
   video: string;
   audio: string;
+  size: number;
   user: UserDoc;
   status: VideoStates;
   updatedAt: string;
@@ -39,6 +41,10 @@ const resourceSchema = new mongoose.Schema(
       type: String,
       required: false,
       default: "",
+    },
+    size: {
+      type: Number,
+      required: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

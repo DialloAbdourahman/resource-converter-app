@@ -24,6 +24,7 @@ it("should handle a video not converted event", async () => {
     name: "asdf",
     user: user.id,
     video: "asdf",
+    size: 2000,
   });
   await resource.save();
 
@@ -59,6 +60,7 @@ it("should publish a video not converted event", async () => {
     name: "asdf",
     user: user.id,
     video: "asdf",
+    size: 2000,
   });
   await resource.save();
 
