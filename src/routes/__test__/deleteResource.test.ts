@@ -35,5 +35,5 @@ it("should allow a user to delete his resource", async () => {
     .delete(`/api/resources/${resource.body.data.id}`)
     .set("Cookie", cookie)
     .send();
-  expect(response.status).toEqual(204);
+  expect(response.status).toEqual(200);
 });

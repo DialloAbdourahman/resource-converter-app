@@ -206,7 +206,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     _id: id,
   });
 
-  OrchestrationResult.success(res, 204);
+  OrchestrationResult.success(res);
 });
 
 export { router as resourceRouter };
