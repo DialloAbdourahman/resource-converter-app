@@ -11,22 +11,15 @@ import {
 } from "@daconverter/common-libs";
 import { rabbitmqWrapper } from "../../rabbitmq-wrapper";
 import { VideoUploadedPublisher } from "../../events/publishers/VideoUploadedPublisher";
+import { createResource } from "./getResourceInfo.test";
 
 it("should allow a user to retry a faild conversion and publish an event", async () => {
-  const videoPath = path.join(__dirname, "../../../testVideo/test.mp4");
   const { cookie } = await getLoginUser();
   const name = "asdf";
 
-  const resourceCreationResponse = await request(app)
-    .post("/api/resources")
-    .set("Cookie", cookie)
-    .field("name", name)
-    .attach("video", fs.createReadStream(videoPath));
-  expect(resourceCreationResponse.status).toBe(201);
+  const resource = await createResource(cookie, name);
 
-  const updatedResource = await Resource.findById(
-    resourceCreationResponse.body.data.id
-  );
+  const updatedResource = await Resource.findById(resource.body.data.id);
 
   if (updatedResource) {
     updatedResource.status = VideoStates.FAILED;
@@ -34,7 +27,7 @@ it("should allow a user to retry a faild conversion and publish an event", async
   }
 
   const response = await request(app)
-    .post(`/api/resources/retry/${resourceCreationResponse.body.data.id}`)
+    .post(`/api/resources/retry/${resource.body.data.id}`)
     .set("Cookie", cookie);
   expect(response.status).toBe(200);
 
@@ -55,20 +48,12 @@ it("should allow a user to retry a faild conversion and publish an event", async
 });
 
 it("should not allow a user to retry an already converted video", async () => {
-  const videoPath = path.join(__dirname, "../../../testVideo/test.mp4");
   const { cookie } = await getLoginUser();
   const name = "asdf";
 
-  const resourceCreationResponse = await request(app)
-    .post("/api/resources")
-    .set("Cookie", cookie)
-    .field("name", name)
-    .attach("video", fs.createReadStream(videoPath));
-  expect(resourceCreationResponse.status).toBe(201);
+  const resource = await createResource(cookie, name);
 
-  const updatedResource = await Resource.findById(
-    resourceCreationResponse.body.data.id
-  );
+  const updatedResource = await Resource.findById(resource.body.data.id);
 
   if (updatedResource) {
     updatedResource.status = VideoStates.COMPLETE;
@@ -76,27 +61,19 @@ it("should not allow a user to retry an already converted video", async () => {
   }
 
   const response = await request(app)
-    .post(`/api/resources/retry/${resourceCreationResponse.body.data.id}`)
+    .post(`/api/resources/retry/${resource.body.data.id}`)
     .set("Cookie", cookie);
   expect(response.status).toBe(400);
   expect(response.body.code).toBe(CODE.VIDEO_CONVERTED_ALREADY);
 });
 
 it("should not allow a user to retry a video that is still being converted", async () => {
-  const videoPath = path.join(__dirname, "../../../testVideo/test.mp4");
   const { cookie } = await getLoginUser();
   const name = "asdf";
 
-  const resourceCreationResponse = await request(app)
-    .post("/api/resources")
-    .set("Cookie", cookie)
-    .field("name", name)
-    .attach("video", fs.createReadStream(videoPath));
-  expect(resourceCreationResponse.status).toBe(201);
+  const resource = await createResource(cookie, name);
 
-  const updatedResource = await Resource.findById(
-    resourceCreationResponse.body.data.id
-  );
+  const updatedResource = await Resource.findById(resource.body.data.id);
 
   if (updatedResource) {
     updatedResource.status = VideoStates.UPLOADED;
@@ -104,19 +81,15 @@ it("should not allow a user to retry a video that is still being converted", asy
   }
 
   const response = await request(app)
-    .post(`/api/resources/retry/${resourceCreationResponse.body.data.id}`)
+    .post(`/api/resources/retry/${resource.body.data.id}`)
     .set("Cookie", cookie);
   expect(response.status).toBe(400);
   expect(response.body.code).toBe(CODE.VIDEO_IS_STILL_BEING_CONVERTED);
 });
 
 it("should not allow an unauthenticated user to use this route", async () => {
-  const videoPath = path.join(__dirname, "../../../testVideo/test.mp4");
-  const name = "asdf";
-
-  const resourceCreationResponse = await request(app)
-    .post("/api/resources")
-    .field("name", name)
-    .attach("video", fs.createReadStream(videoPath));
+  const resourceCreationResponse = await request(app).post(
+    "/api/resources/retry/asdf"
+  );
   expect(resourceCreationResponse.status).toBe(401);
 });

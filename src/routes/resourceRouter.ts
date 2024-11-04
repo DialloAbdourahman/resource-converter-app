@@ -60,7 +60,23 @@ router.post(
       video: resource.video,
     });
 
-    OrchestrationResult.item(res, resource, 201);
+    const data: {
+      resource: any;
+      videoUrl?: string;
+      audioUrl?: string;
+    } = {
+      resource,
+    };
+
+    if (resource.video && resource.status !== VideoStates.COMPLETE) {
+      data.videoUrl = await awsHelper.getVideoUrl(resource.video);
+    }
+
+    if (resource.audio && resource.status === VideoStates.COMPLETE) {
+      data.audioUrl = await awsHelper.getAudioUrl(resource.audio);
+    }
+
+    OrchestrationResult.item(res, data, 201);
   }
 );
 
@@ -142,6 +158,8 @@ router.get("/", async (req: Request, res: Response) => {
   const resources = await Resource.find({
     user: req.currentUser?.id,
   })
+    .populate("user")
+    .sort({ createdAt: -1 }) // Sort by createdAt in descending order
     .skip(skip)
     .limit(itemsPerPage);
   const count = await Resource.countDocuments();
