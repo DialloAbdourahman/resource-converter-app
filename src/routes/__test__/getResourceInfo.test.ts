@@ -15,7 +15,11 @@ export const createResource = async (cookie: string[], name: string) => {
     .attach("video", fs.createReadStream(videoPath));
   expect(resourceCreationResponse.status).toBe(201);
 
-  return resourceCreationResponse;
+  return {
+    body: {
+      data: resourceCreationResponse.body.data.resource,
+    },
+  };
 };
 
 it("should not allow an unauthenitated user to see his resource", async () => {

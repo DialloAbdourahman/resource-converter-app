@@ -7,7 +7,9 @@ type ValidatorMiddleware = ValidationChain | RequestHandler;
 
 export const validateUpload: ValidatorMiddleware[] = [
   body("name")
-    .isLength({ min: 1, max: 20 })
-    .withMessage("Name must be at leat 1 characters and at most 20 characters"),
+    .isLength({ min: 1, max: 50 })
+    .withMessage(
+      "Name must be at least 1 characters and at most 50 characters"
+    ),
   validateRequest,
 ];
