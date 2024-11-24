@@ -12,6 +12,7 @@ it("should handle a user created event", async () => {
     email: "test@test.com",
     fullname: "",
     version: 1,
+    code: "1234",
   };
 
   // Create a fake channel object and message object.
